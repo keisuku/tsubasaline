@@ -309,6 +309,47 @@ function generateHeroSVG() {
   `;
 }
 
+// --- Table of Contents (目次) Auto-generation ---
+function generateTOC() {
+  const headings = document.querySelectorAll('.content-section h2');
+  if (headings.length < 2) return; // Only generate if 2+ sections
+
+  // Assign IDs to headings
+  headings.forEach((h2, i) => {
+    if (!h2.id) {
+      const text = h2.textContent.trim().replace(/\s+/g, '-');
+      h2.id = 'section-' + (i + 1);
+    }
+  });
+
+  const toc = document.createElement('div');
+  toc.className = 'toc';
+  toc.innerHTML = `
+    <div class="toc-header">
+      <i class="fa-solid fa-list-ol"></i>
+      <h3>目次</h3>
+      <i class="fa-solid fa-chevron-down toc-toggle"></i>
+    </div>
+    <ol class="toc-list">
+      ${Array.from(headings).map(h2 => {
+        const text = h2.textContent.trim();
+        return `<li><a href="#${h2.id}">${text}</a></li>`;
+      }).join('')}
+    </ol>
+  `;
+
+  // Insert before first content-section
+  const firstSection = document.querySelector('.content-section');
+  if (firstSection) {
+    firstSection.parentNode.insertBefore(toc, firstSection);
+  }
+
+  // Toggle collapse
+  toc.querySelector('.toc-header').addEventListener('click', () => {
+    toc.classList.toggle('collapsed');
+  });
+}
+
 // --- Init ---
 document.addEventListener('DOMContentLoaded', () => {
   generateHeader();
@@ -318,6 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSidebarToggle();
   initHeaderScroll();
   generateHeroSVG();
+  generateTOC();
 
   // Delay scroll reveal slightly to let DOM settle
   requestAnimationFrame(() => {
