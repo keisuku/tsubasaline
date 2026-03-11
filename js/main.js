@@ -53,7 +53,6 @@ function resolveHref(href) {
 
 function isCurrentPage(href) {
   const current = window.location.pathname;
-  // Normalize: remove trailing index.html
   const normalizedCurrent = current.replace(/\/index\.html$/, '/');
   const normalizedHref = href.replace(/\/index\.html$/, '/');
   return normalizedCurrent.endsWith(normalizedHref) || current.endsWith(href);
@@ -105,6 +104,8 @@ function generateSidebar() {
     navHTML += `</div>`;
   });
 
+  // Sidebar bottom info
+  navHTML += `<div class="sidebar-info">非公式攻略サイト<br>v2.0</div>`;
   navHTML += '</nav>';
   sidebar.innerHTML = navHTML;
 
@@ -162,11 +163,31 @@ function generateFooter() {
   const footer = document.createElement('footer');
   footer.className = 'site-footer';
   footer.innerHTML = `
-    <div class="footer-links">
-      <a href="https://tsubasa-rivals.com/" target="_blank" rel="noopener">公式サイト</a>
-      <a href="https://x.com/taborivalsJP" target="_blank" rel="noopener">公式X (Twitter)</a>
+    <div class="footer-grid">
+      <div class="footer-section">
+        <div class="footer-section-title">About</div>
+        <p>キャプテン翼 -RIVALS- on LINE の非公式攻略サイト。最新シーズンの攻略情報を随時更新しています。</p>
+      </div>
+      <div class="footer-section">
+        <div class="footer-section-title">ガイド</div>
+        <nav class="footer-nav">
+          <a href="${resolveHref('/pages/current-season.html')}">最新シーズン攻略</a>
+          <a href="${resolveHref('/pages/team-building.html')}">チーム編成・強化</a>
+          <a href="${resolveHref('/pages/earning.html')}">稼ぎ方ガイド</a>
+          <a href="${resolveHref('/pages/beginners.html')}">初心者ガイド</a>
+        </nav>
+      </div>
+      <div class="footer-section">
+        <div class="footer-section-title">外部リンク</div>
+        <nav class="footer-nav">
+          <a href="https://tsubasa-rivals.com/" target="_blank" rel="noopener">公式サイト</a>
+          <a href="https://x.com/taborivalsJP" target="_blank" rel="noopener">公式X (Twitter)</a>
+        </nav>
+      </div>
     </div>
-    <p>&copy; 2025 キャプテン翼 -RIVALS- on LINE 攻略ガイド（非公式）</p>
+    <div class="footer-bottom">
+      &copy; 2025 キャプテン翼 -RIVALS- on LINE 攻略ガイド（非公式）
+    </div>
   `;
   document.body.appendChild(footer);
 }
@@ -184,6 +205,110 @@ function generateBreadcrumb() {
   `;
 }
 
+// --- Header Scroll Effect ---
+function initHeaderScroll() {
+  const header = document.querySelector('.site-header');
+  if (!header) return;
+
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        if (window.scrollY > 50) {
+          header.classList.add('header-scrolled');
+        } else {
+          header.classList.remove('header-scrolled');
+        }
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+}
+
+// --- Scroll Reveal (Intersection Observer) ---
+function initScrollReveal() {
+  // Check for reduced motion preference
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const targets = document.querySelectorAll('.card, .content-section, .info-box, .season-banner, .section-heading, .placeholder-content');
+  targets.forEach(el => el.classList.add('reveal'));
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, {
+    threshold: 0.15,
+    rootMargin: '0px 0px -30px 0px'
+  });
+
+  targets.forEach(el => observer.observe(el));
+}
+
+// --- Button Ripple Effect ---
+function initRipple() {
+  const buttons = document.querySelectorAll('.hero-cta, .season-banner .btn');
+  buttons.forEach(btn => {
+    btn.classList.add('ripple-container');
+    btn.addEventListener('click', (e) => {
+      const rect = btn.getBoundingClientRect();
+      const ripple = document.createElement('span');
+      ripple.className = 'ripple';
+      const size = Math.max(rect.width, rect.height);
+      ripple.style.width = ripple.style.height = size + 'px';
+      ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+      ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+      btn.appendChild(ripple);
+      ripple.addEventListener('animationend', () => ripple.remove());
+    });
+  });
+}
+
+// --- Hero SVG Decoration ---
+function generateHeroSVG() {
+  const container = document.getElementById('hero-svg');
+  if (!container) return;
+
+  container.innerHTML = `
+    <svg viewBox="0 0 1200 500" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <!-- Center circle (soccer field) -->
+      <circle cx="900" cy="250" r="180" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="2">
+        <animateTransform attributeName="transform" type="scale" values="1;1.05;1" dur="12s" repeatCount="indefinite" additive="sum" />
+      </circle>
+      <circle cx="900" cy="250" r="8" fill="rgba(255,255,255,0.04)" />
+
+      <!-- Hexagons -->
+      <g opacity="0.03" transform="translate(1000, 80) rotate(15)">
+        <polygon points="30,0 60,17 60,52 30,69 0,52 0,17" fill="none" stroke="white" stroke-width="1.5"/>
+      </g>
+      <g opacity="0.025" transform="translate(1080, 180) rotate(-10)">
+        <polygon points="25,0 50,14 50,43 25,58 0,43 0,14" fill="none" stroke="white" stroke-width="1"/>
+      </g>
+      <g opacity="0.02" transform="translate(800, 400) rotate(30)">
+        <polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="none" stroke="white" stroke-width="1"/>
+      </g>
+
+      <!-- Speed lines -->
+      <line x1="100" y1="450" x2="500" y2="350" stroke="rgba(212,168,67,0.06)" stroke-width="1">
+        <animate attributeName="opacity" values="0;0.06;0" dur="5s" repeatCount="indefinite" />
+      </line>
+      <line x1="50" y1="400" x2="600" y2="250" stroke="rgba(255,255,255,0.03)" stroke-width="0.5">
+        <animate attributeName="opacity" values="0;0.03;0" dur="7s" repeatCount="indefinite" />
+      </line>
+      <line x1="200" y1="480" x2="700" y2="300" stroke="rgba(212,168,67,0.04)" stroke-width="0.8">
+        <animate attributeName="opacity" values="0;0.04;0" dur="6s" repeatCount="indefinite" begin="2s" />
+      </line>
+
+      <!-- Dotted arc -->
+      <path d="M 850 50 A 300 300 0 0 1 1150 250" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1" stroke-dasharray="4 8" />
+    </svg>
+  `;
+}
+
 // --- Init ---
 document.addEventListener('DOMContentLoaded', () => {
   generateHeader();
@@ -191,4 +316,12 @@ document.addEventListener('DOMContentLoaded', () => {
   generateFooter();
   generateBreadcrumb();
   initSidebarToggle();
+  initHeaderScroll();
+  generateHeroSVG();
+
+  // Delay scroll reveal slightly to let DOM settle
+  requestAnimationFrame(() => {
+    initScrollReveal();
+    initRipple();
+  });
 });
