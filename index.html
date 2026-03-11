@@ -51,6 +51,55 @@
       </a>
     </div>
 
+    <!-- Search Box -->
+    <div class="search-box">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" placeholder="攻略情報を探してみよう" id="site-search">
+      <button type="button" onclick="document.getElementById('site-search').focus()"><i class="fa-solid fa-magnifying-glass"></i></button>
+    </div>
+
+    <!-- Popular Articles -->
+    <div class="popular-articles">
+      <div class="popular-articles-header">
+        <button class="tab active"><i class="fa-solid fa-fire"></i> 人気記事</button>
+        <button class="tab"><i class="fa-solid fa-clock-rotate-left"></i> 最新更新</button>
+      </div>
+      <ul class="popular-articles-list" id="popular-list">
+        <li>
+          <span class="article-rank rank-1">1</span>
+          <a href="pages/pvp.html" class="article-link">PvP最強キャラランキング【最新版】</a>
+          <span class="article-badge badge-update">更新</span>
+        </li>
+        <li>
+          <span class="article-rank rank-2">2</span>
+          <a href="pages/team-building.html" class="article-link">最強チーム編成ランキング【Season 2】</a>
+          <span class="article-badge badge-hot">HOT</span>
+        </li>
+        <li>
+          <span class="article-rank rank-3">3</span>
+          <a href="pages/current-season.html" class="article-link">Season 2 新カードの評価とおすすめ編成</a>
+          <span class="article-badge badge-new">NEW</span>
+        </li>
+        <li>
+          <span class="article-rank rank-other">4</span>
+          <a href="pages/earning.html" class="article-link">$JOHN エアドロップ効率最大化ガイド</a>
+        </li>
+        <li>
+          <span class="article-rank rank-other">5</span>
+          <a href="pages/pve.html" class="article-link">PvE ステージ攻略 — おすすめ編成と周回効率</a>
+        </li>
+        <li>
+          <span class="article-rank rank-other">6</span>
+          <a href="pages/beginners.html" class="article-link">初心者が最初にやるべきこと完全ガイド</a>
+        </li>
+        <li>
+          <span class="article-rank rank-other">7</span>
+          <a href="pages/arena.html" class="article-link">アリーナ攻略 — 新モードのルールと必勝法</a>
+          <span class="article-badge badge-new">NEW</span>
+        </li>
+      </ul>
+    </div>
+
     <!-- Battle Modes -->
     <h2 class="section-heading"><i class="fa-solid fa-burst"></i> 対戦モード</h2>
     <div class="card-grid">
