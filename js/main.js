@@ -350,6 +350,28 @@ function generateTOC() {
   });
 }
 
+// --- Auto-load images from data-img attributes ---
+function initAutoImages() {
+  document.querySelectorAll('[data-img]').forEach(el => {
+    const src = el.getAttribute('data-img');
+    if (!src) return;
+
+    // Resolve path (pages/ need ../ prefix)
+    const base = getBasePath();
+    const fullSrc = base + '/' + src;
+
+    const img = new Image();
+    img.loading = 'lazy';
+    img.alt = el.textContent.trim().replace(/<!--.*?-->/g, '').trim() || '';
+    img.src = fullSrc;
+
+    img.onload = () => {
+      el.appendChild(img);
+    };
+    // On error: silently keep the fallback icon/pattern
+  });
+}
+
 // --- Init ---
 document.addEventListener('DOMContentLoaded', () => {
   generateHeader();
@@ -360,6 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initHeaderScroll();
   generateHeroSVG();
   generateTOC();
+  initAutoImages();
 
   // Delay scroll reveal slightly to let DOM settle
   requestAnimationFrame(() => {

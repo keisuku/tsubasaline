@@ -1120,6 +1120,54 @@ tr:hover td:first-child {
   overflow: hidden;
 }
 
+/* Image inside placeholder: hide stripes and show image */
+.placeholder-content .placeholder-img:has(img) {
+  background: none;
+  height: auto;
+  max-height: 400px;
+}
+
+.placeholder-content .placeholder-img:has(img)::after {
+  display: none;
+}
+
+.placeholder-content .placeholder-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  display: block;
+}
+
+/* Image inside card-icon */
+.card-icon:has(img) {
+  padding: 0;
+}
+
+.card-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-icon:has(img) i,
+.card-icon:has(img) .card-badge { display: none; }
+
+/* Ranking chara icon image */
+.ranking-chara-icon:has(img) {
+  padding: 0;
+  overflow: hidden;
+}
+
+.ranking-chara-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.ranking-chara-icon:has(img) i { display: none; }
+
 .placeholder-content .placeholder-img::after {
   content: '';
   position: absolute;
@@ -1548,7 +1596,18 @@ body::before {
   color: #fff;
   position: relative;
   box-shadow: var(--shadow-sm);
+  overflow: hidden;
 }
+
+.chara-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* Hide icon when image is present */
+.chara-avatar:has(img) i { display: none; }
 
 .chara-avatar.rarity-ss {
   background: linear-gradient(135deg, #d4a843, #f0c95a);

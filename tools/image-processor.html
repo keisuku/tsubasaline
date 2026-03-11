@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>画像処理ツール | Tsubasa Rivals 攻略サイト</title>
+<style>
+  :root {
+    --bg: #0a0e27;
+    --surface: #121838;
+    --surface-2: #1e2550;
+    --gold: #d4a843;
+    --gold-dim: rgba(212,168,67,0.12);
+    --text: #e8eaf0;
+    --text-muted: #8890a8;
+    --radius: 12px;
+    --font: 'Noto Sans JP', 'Inter', system-ui, sans-serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 32px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--gold), #f0c95a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-bottom: 32px;
+  }
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  select, input[type="range"] {
+    background: var(--surface);
+    border: 1px solid var(--surface-2);
+    color: var(--text);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-family: var(--font);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  select:focus { border-color: var(--gold); }
+  select option { background: var(--surface); }
+  .drop-zone {
+    border: 2px dashed var(--surface-2);
+    border-radius: var(--radius);
+    padding: 48px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: var(--surface);
+    margin-bottom: 24px;
+    position: relative;
+  }
+  .drop-zone.dragover {
+    border-color: var(--gold);
+    background: var(--gold-dim);
+  }
+  .drop-zone.has-image {
+    padding: 16px;
+  }
+  .drop-zone i {
+    font-size: 40px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    display: block;
+  }
+  .drop-zone p {
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+  .drop-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .preview-area {
+    display: none;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  .preview-area.visible {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+  }
+  .preview-box {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 16px;
+    text-align: center;
+  }
+  .preview-box h3 {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .preview-box img {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+    display: block;
+    margin: 0 auto;
+  }
+  .preview-box .chara-preview img {
+    border-radius: 50%;
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+  }
+  .preview-info {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 8px;
+  }
+  .arrow {
+    font-size: 24px;
+    color: var(--gold);
+  }
+  .output-info {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 24px;
+    display: none;
+    border-left: 3px solid var(--gold);
+  }
+  .output-info.visible { display: block; }
+  .output-info table {
+    width: 100%;
+    font-size: 13px;
+  }
+  .output-info td {
+    padding: 4px 0;
+  }
+  .output-info td:first-child {
+    color: var(--text-muted);
+    width: 120px;
+  }
+  .output-info td:last-child {
+    font-weight: 600;
+    color: var(--gold);
+  }
+  .quality-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .quality-row input[type="range"] {
+    flex: 1;
+    padding: 0;
+    accent-color: var(--gold);
+  }
+  .quality-row span {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gold);
+    min-width: 40px;
+    text-align: right;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 32px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: var(--font);
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    justify-content: center;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--gold), #c49a3c);
+    color: var(--bg);
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(212,168,67,0.3);
+  }
+  .btn-primary:disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  .btn-secondary {
+    background: var(--surface-2);
+    color: var(--text);
+    margin-top: 12px;
+  }
+  .btn-secondary:hover {
+    background: #2a3268;
+  }
+  .image-list {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-top: 32px;
+  }
+  .image-list h2 {
+    font-size: 16px;
+    margin-bottom: 16px;
+    color: var(--gold);
+  }
+  .image-list table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .image-list th {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 2px solid var(--surface-2);
+    color: var(--text-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .image-list td {
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .image-list tr:hover td { background: rgba(212,168,67,0.04); }
+  .size-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--surface-2);
+    font-family: 'Inter', monospace;
+  }
+  .cat-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .cat-a { background: rgba(212,168,67,0.15); color: var(--gold); }
+  .cat-b { background: rgba(59,130,246,0.15); color: #60a5fa; }
+  .cat-c { background: rgba(16,185,129,0.15); color: #34d399; }
+  .cat-d { background: rgba(239,68,68,0.15); color: #f87171; }
+  .cat-e { background: rgba(168,85,247,0.15); color: #c084fc; }
+  .cat-f { background: rgba(251,191,36,0.15); color: #fbbf24; }
+  @media (max-width: 640px) {
+    body { padding: 16px; }
+    .controls { grid-template-columns: 1fr; }
+    .preview-area.visible { grid-template-columns: 1fr; }
+    .arrow { transform: rotate(90deg); text-align: center; }
+  }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+<div class="container">
+  <h1><i class="fa-solid fa-wand-magic-sparkles"></i> 画像処理ツール</h1>
+  <p class="subtitle">Tsubasa Rivals 攻略サイト用 — ドラッグ＆ドロップで画像をリサイズ＆リネーム</p>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="control-group">
+      <label>カテゴリ</label>
+      <select id="category">
+        <option value="">-- 選択してください --</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>画像名</label>
+      <select id="imageName" disabled>
+        <option value="">-- カテゴリを先に選択 --</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Drop Zone -->
+  <div class="drop-zone" id="dropZone">
+    <i class="fa-solid fa-cloud-arrow-up"></i>
+    <p>画像をここにドラッグ＆ドロップ<br>またはクリックして選択</p>
+    <input type="file" accept="image/*" id="fileInput">
+  </div>
+
+  <!-- Output Info -->
+  <div class="output-info" id="outputInfo">
+    <table>
+      <tr><td>出力ファイル名</td><td id="infoFilename">-</td></tr>
+      <tr><td>出力サイズ</td><td id="infoSize">-</td></tr>
+      <tr><td>出力フォーマット</td><td id="infoFormat">-</td></tr>
+      <tr><td>保存先</td><td id="infoPath">-</td></tr>
+    </table>
+  </div>
+
+  <!-- Quality -->
+  <div class="quality-row">
+    <label>画質</label>
+    <input type="range" id="quality" min="50" max="100" value="85">
+    <span id="qualityVal">85%</span>
+  </div>
+
+  <!-- Preview -->
+  <div class="preview-area" id="previewArea">
+    <div class="preview-box">
+      <h3>元画像</h3>
+      <img id="previewOriginal" alt="Original">
+      <div class="preview-info" id="originalInfo"></div>
+    </div>
+    <div class="arrow"><i class="fa-solid fa-arrow-right"></i></div>
+    <div class="preview-box">
+      <h3>変換後</h3>
+      <div id="previewOutputWrap">
+        <img id="previewOutput" alt="Output">
+      </div>
+      <div class="preview-info" id="outputInfoText"></div>
+    </div>
+  </div>
+
+  <!-- Download -->
+  <button class="btn btn-primary" id="downloadBtn" disabled>
+    <i class="fa-solid fa-download"></i> ダウンロード
+  </button>
+  <button class="btn btn-secondary" id="resetBtn" style="display:none">
+    <i class="fa-solid fa-rotate-left"></i> リセット
+  </button>
+
+  <!-- Full Image List -->
+  <div class="image-list">
+    <h2><i class="fa-solid fa-list-check"></i> 必要な画像一覧（全24枚）</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>カテゴリ</th>
+          <th>ファイル名</th>
+          <th>サイズ</th>
+          <th>説明</th>
+        </tr>
+      </thead>
+      <tbody id="imageListBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// ===== Category & Image Configuration =====
+const CATEGORIES = {
+  'chara': {
+    label: 'A. キャラアバター',
+    width: 144, height: 144,
+    format: 'webp',
+    dir: 'images/chara/',
+    prefix: 'chara-',
+    catClass: 'cat-a',
+    names: [
+      { id: 'tsubasa', label: '大空 翼（FW）' },
+      { id: 'hyuga', label: '日向 小次郎（FW）' },
+      { id: 'wakabayashi', label: '若林 源三（GK）' },
+      { id: 'misaki', label: '岬 太郎（MF）' },
+      { id: 'matsuyama', label: '松山 光（MF）' },
+      { id: 'misugi', label: '三杉 淳（DF）' },
+      { id: 'wakashimazu', label: '若島津 健（GK）' },
+      { id: 'ishizaki', label: '石崎 了（DF）' },
+    ]
+  },
+  'content': {
+    label: 'B. コンテンツ画像',
+    width: 800, height: 400,
+    format: 'webp',
+    dir: 'images/content/',
+    prefix: 'content-',
+    catClass: 'cat-b',
+    names: [
+      { id: 'pve-overview', label: 'PvEモードのゲームプレイ画面' },
+      { id: 'pvp-overview', label: 'PvPモードのゲームプレイ画面' },
+      { id: 'arena-overview', label: 'アリーナモードの画面' },
+      { id: 'beginners-start', label: 'ゲーム開始画面' },
+      { id: 'season2-overview', label: 'Season 2 概要バナー' },
+    ]
+  },
+  'cards': {
+    label: 'C. カードアイコン',
+    width: 400, height: 200,
+    format: 'webp',
+    dir: 'images/cards/',
+    prefix: 'card-',
+    catClass: 'cat-c',
+    names: [
+      { id: 'pve', label: 'PvEモード' },
+      { id: 'pvp', label: 'PvPモード' },
+      { id: 'arena', label: 'アリーナモード' },
+      { id: 'gvg', label: 'GvGモード' },
+      { id: 'team', label: 'チーム編成' },
+      { id: 'earning', label: '稼ぎ方ガイド' },
+      { id: 'beginner', label: '初心者ガイド' },
+    ]
+  },
+  'hero': {
+    label: 'D. ヒーロー・バナー',
+    width: 1200, height: 500,
+    format: 'webp',
+    dir: 'images/hero/',
+    prefix: 'hero-',
+    catClass: 'cat-d',
+    names: [
+      { id: 'banner', label: 'トップページヒーロー背景' },
+    ]
+  },
+  'meta': {
+    label: 'E. OG/SNSシェア用',
+    width: 1200, height: 630,
+    format: 'webp',
+    dir: 'images/meta/',
+    prefix: 'og-',
+    catClass: 'cat-e',
+    names: [
+      { id: 'image', label: 'SNSシェア時のサムネイル' },
+    ]
+  },
+  'favicon': {
+    label: 'F. ファビコン',
+    width: 180, height: 180,
+    format: 'png',
+    dir: 'images/meta/',
+    prefix: '',
+    catClass: 'cat-f',
+    names: [
+      { id: 'favicon', label: 'ブラウザタブアイコン（32×32版も自動生成）' },
+      { id: 'apple-touch-icon', label: 'iOS ホーム画面アイコン' },
+    ]
+  }
+};
+
+// ===== State =====
+let currentImage = null;
+let outputCanvas = null;
+
+// ===== DOM =====
+const categorySelect = document.getElementById('category');
+const nameSelect = document.getElementById('imageName');
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const previewArea = document.getElementById('previewArea');
+const previewOriginal = document.getElementById('previewOriginal');
+const previewOutput = document.getElementById('previewOutput');
+const previewOutputWrap = document.getElementById('previewOutputWrap');
+const originalInfo = document.getElementById('originalInfo');
+const outputInfoText = document.getElementById('outputInfoText');
+const outputInfoBox = document.getElementById('outputInfo');
+const downloadBtn = document.getElementById('downloadBtn');
+const resetBtn = document.getElementById('resetBtn');
+const qualitySlider = document.getElementById('quality');
+const qualityVal = document.getElementById('qualityVal');
+
+// ===== Init Selects =====
+Object.entries(CATEGORIES).forEach(([key, cat]) => {
+  const opt = document.createElement('option');
+  opt.value = key;
+  opt.textContent = cat.label;
+  categorySelect.appendChild(opt);
+});
+
+categorySelect.addEventListener('change', () => {
+  const cat = CATEGORIES[categorySelect.value];
+  nameSelect.innerHTML = '';
+  if (!cat) {
+    nameSelect.disabled = true;
+    nameSelect.innerHTML = '<option value="">-- カテゴリを先に選択 --</option>';
+    updateOutputInfo();
+    return;
+  }
+  nameSelect.disabled = false;
+  cat.names.forEach(n => {
+    const opt = document.createElement('option');
+    opt.value = n.id;
+    opt.textContent = `${n.label} → ${cat.prefix}${n.id}.${cat.format}`;
+    nameSelect.appendChild(opt);
+  });
+  updateOutputInfo();
+  processIfReady();
+});
+
+nameSelect.addEventListener('change', () => {
+  updateOutputInfo();
+  processIfReady();
+});
+
+// ===== Quality =====
+qualitySlider.addEventListener('input', () => {
+  qualityVal.textContent = qualitySlider.value + '%';
+  processIfReady();
+});
+
+// ===== Drag & Drop =====
+dropZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  dropZone.classList.add('dragover');
+});
+dropZone.addEventListener('dragleave', () => {
+  dropZone.classList.remove('dragover');
+});
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) handleFile(file);
+});
+fileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) handleFile(file);
+});
+
+// ===== File Handling =====
+function handleFile(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      currentImage = img;
+      previewOriginal.src = e.target.result;
+      originalInfo.textContent = `${img.width} x ${img.height}px`;
+      dropZone.classList.add('has-image');
+      dropZone.innerHTML = `<img src="${e.target.result}" style="max-height:80px;border-radius:8px;"><p style="margin-top:8px;color:var(--text-muted);font-size:12px;">別の画像に変更するにはドロップ</p>`;
+      resetBtn.style.display = '';
+      processIfReady();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ===== Process =====
+function processIfReady() {
+  const catKey = categorySelect.value;
+  const nameId = nameSelect.value;
+  if (!currentImage || !catKey || !nameId) {
+    previewArea.classList.remove('visible');
+    downloadBtn.disabled = true;
+    return;
+  }
+
+  const cat = CATEGORIES[catKey];
+  const targetW = cat.width;
+  const targetH = cat.height;
+
+  // Center-crop resize
+  const canvas = document.createElement('canvas');
+  canvas.width = targetW;
+  canvas.height = targetH;
+  const ctx = canvas.getContext('2d');
+
+  const srcRatio = currentImage.width / currentImage.height;
+  const tgtRatio = targetW / targetH;
+  let sx, sy, sw, sh;
+  if (srcRatio > tgtRatio) {
+    sh = currentImage.height;
+    sw = currentImage.height * tgtRatio;
+    sx = (currentImage.width - sw) / 2;
+    sy = 0;
+  } else {
+    sw = currentImage.width;
+    sh = currentImage.width / tgtRatio;
+    sx = 0;
+    sy = (currentImage.height - sh) / 2;
+  }
+
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(currentImage, sx, sy, sw, sh, 0, 0, targetW, targetH);
+
+  outputCanvas = canvas;
+
+  // Preview
+  if (catKey === 'chara') {
+    previewOutputWrap.className = 'chara-preview';
+  } else {
+    previewOutputWrap.className = '';
+  }
+  previewOutput.src = canvas.toDataURL();
+  outputInfoText.textContent = `${targetW} x ${targetH}px (${cat.format.toUpperCase()})`;
+  previewArea.classList.add('visible');
+  downloadBtn.disabled = false;
+
+  updateOutputInfo();
+}
+
+// ===== Output Info =====
+function updateOutputInfo() {
+  const catKey = categorySelect.value;
+  const nameId = nameSelect.value;
+  if (!catKey || !nameId) {
+    outputInfoBox.classList.remove('visible');
+    return;
+  }
+  const cat = CATEGORIES[catKey];
+  const filename = cat.prefix + nameId + '.' + cat.format;
+  document.getElementById('infoFilename').textContent = filename;
+  document.getElementById('infoSize').textContent = `${cat.width} x ${cat.height}px`;
+  document.getElementById('infoFormat').textContent = cat.format.toUpperCase();
+  document.getElementById('infoPath').textContent = cat.dir + filename;
+  outputInfoBox.classList.add('visible');
+}
+
+// ===== Download =====
+downloadBtn.addEventListener('click', () => {
+  if (!outputCanvas) return;
+  const catKey = categorySelect.value;
+  const nameId = nameSelect.value;
+  const cat = CATEGORIES[catKey];
+  const filename = cat.prefix + nameId + '.' + cat.format;
+  const mime = cat.format === 'webp' ? 'image/webp' : 'image/png';
+  const quality = qualitySlider.value / 100;
+
+  outputCanvas.toBlob((blob) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, mime, quality);
+});
+
+// ===== Reset =====
+resetBtn.addEventListener('click', () => {
+  currentImage = null;
+  outputCanvas = null;
+  previewArea.classList.remove('visible');
+  downloadBtn.disabled = true;
+  resetBtn.style.display = 'none';
+  dropZone.classList.remove('has-image');
+  dropZone.innerHTML = `
+    <i class="fa-solid fa-cloud-arrow-up"></i>
+    <p>画像をここにドラッグ＆ドロップ<br>またはクリックして選択</p>
+    <input type="file" accept="image/*" id="fileInput">
+  `;
+  document.getElementById('fileInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) handleFile(file);
+  });
+});
+
+// ===== Generate Image List Table =====
+function generateImageList() {
+  const tbody = document.getElementById('imageListBody');
+  let num = 1;
+  Object.entries(CATEGORIES).forEach(([key, cat]) => {
+    cat.names.forEach(n => {
+      const filename = cat.prefix + n.id + '.' + cat.format;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${num}</td>
+        <td><span class="cat-badge ${cat.catClass}">${cat.label.split('. ')[0]}</span></td>
+        <td><code>${filename}</code></td>
+        <td><span class="size-badge">${cat.width}x${cat.height}</span></td>
+        <td>${n.label}</td>
+      `;
+      tbody.appendChild(tr);
+      num++;
+    });
+  });
+}
+generateImageList();
+</script>
+</body>
+</html>
